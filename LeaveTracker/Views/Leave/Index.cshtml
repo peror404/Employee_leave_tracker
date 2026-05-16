@@ -1,0 +1,111 @@
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stats  = ViewBag.Stats  as Dictionary<string, int>;
+    var leaves = ViewBag.Leaves as List<LeaveTracker.Models.LeaveRequest>;
+    var active = ViewBag.ActiveFilter as string;
+}
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card stat-total text-center">
+            <h2 class="fw-bold">@stats["Total"]</h2>
+            <p class="mb-0">Total Requests</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card stat-pending text-center">
+            <h2 class="fw-bold">@stats["Pending"]</h2>
+            <p class="mb-0">Pending</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card stat-approved text-center">
+            <h2 class="fw-bold">@stats["Approved"]</h2>
+            <p class="mb-0">Approved</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card stat-rejected text-center">
+            <h2 class="fw-bold">@stats["Rejected"]</h2>
+            <p class="mb-0">Rejected</p>
+        </div>
+    </div>
+</div>
+
+<!-- Filter buttons -->
+<div class="card p-3 mb-4">
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        <span class="fw-semibold me-2">Filter:</span>
+        <a href="/Leave" class="btn btn-sm @(active == null ? "btn-dark" : "btn-outline-dark")">All</a>
+        <a href="/Leave/Filter?status=Pending"  class="btn btn-sm @(active == "Pending"  ? "btn-warning" : "btn-outline-warning")">Pending</a>
+        <a href="/Leave/Filter?status=Approved" class="btn btn-sm @(active == "Approved" ? "btn-success" : "btn-outline-success")">Approved</a>
+        <a href="/Leave/Filter?status=Rejected" class="btn btn-sm @(active == "Rejected" ? "btn-danger"  : "btn-outline-danger")">Rejected</a>
+        <a href="/Leave/Apply" class="btn btn-sm btn-primary ms-auto">+ Apply Leave</a>
+    </div>
+</div>
+
+<!-- Leave table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (leaves.Count == 0)
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No leave requests found.</td></tr>
+            }
+            @foreach (var l in leaves)
+            {
+                <tr>
+                    <td>@l.LeaveId</td>
+                    <td><strong>@l.EmployeeName</strong></td>
+                    <td>@l.Department</td>
+                    <td><span class="badge bg-secondary">@l.LeaveType</span></td>
+                    <td>@l.StartDate.ToString("dd MMM yyyy")</td>
+                    <td>@l.EndDate.ToString("dd MMM yyyy")</td>
+                    <td>@l.TotalDays</td>
+                    <td>
+                        <span class="badge badge-@l.Status px-2 py-1 rounded-pill">@l.Status</span>
+                    </td>
+                    <td>
+                        <a href="/Leave/Details/@l.LeaveId" class="btn btn-xs btn-outline-primary btn-sm">View</a>
+
+                        @if (l.Status == "Pending")
+                        {
+                            using (Html.BeginForm("Approve", "Leave", new { id = l.LeaveId }, FormMethod.Post, null))
+                            {
+                                <button class="btn btn-sm btn-success ms-1">✔</button>
+                            }
+                            using (Html.BeginForm("Reject", "Leave", new { id = l.LeaveId }, FormMethod.Post, null))
+                            {
+                                <button class="btn btn-sm btn-danger ms-1">✘</button>
+                            }
+                        }
+
+                        @using (Html.BeginForm("Delete", "Leave", new { id = l.LeaveId }, FormMethod.Post, null))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-sm btn-outline-danger ms-1"
+                                    onclick="return confirm('Delete this leave request?')">🗑</button>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

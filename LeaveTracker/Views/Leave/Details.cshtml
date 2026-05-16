@@ -1,0 +1,42 @@
+@model LeaveTracker.Models.LeaveRequest
+@{
+    ViewBag.Title = "Leave Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center">
+<div class="col-md-7">
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold text-primary mb-0">Leave Request #@Model.LeaveId</h4>
+        <span class="badge badge-@Model.Status fs-6 px-3 py-2 rounded-pill">@Model.Status</span>
+    </div>
+
+    <table class="table table-bordered">
+        <tr><th style="width:35%">Employee</th><td>@Model.EmployeeName</td></tr>
+        <tr><th>Department</th><td>@Model.Department</td></tr>
+        <tr><th>Leave Type</th><td><span class="badge bg-secondary">@Model.LeaveType</span></td></tr>
+        <tr><th>Start Date</th><td>@Model.StartDate.ToString("dd MMMM yyyy")</td></tr>
+        <tr><th>End Date</th><td>@Model.EndDate.ToString("dd MMMM yyyy")</td></tr>
+        <tr><th>Total Days</th><td><strong>@Model.TotalDays day(s)</strong></td></tr>
+        <tr><th>Reason</th><td>@(string.IsNullOrEmpty(Model.Reason) ? "—" : Model.Reason)</td></tr>
+        <tr><th>Applied On</th><td>@Model.AppliedOn.ToString("dd MMM yyyy, hh:mm tt")</td></tr>
+    </table>
+
+    <div class="d-flex gap-2 mt-3">
+        @if (Model.Status == "Pending")
+        {
+            using (Html.BeginForm("Approve", "Leave", new { id = Model.LeaveId }, FormMethod.Post, null))
+            {
+                <button class="btn btn-success">✔ Approve</button>
+            }
+            using (Html.BeginForm("Reject", "Leave", new { id = Model.LeaveId }, FormMethod.Post, null))
+            {
+                <button class="btn btn-danger">✘ Reject</button>
+            }
+        }
+        <a href="/Leave" class="btn btn-outline-secondary ms-auto">← Back to Dashboard</a>
+    </div>
+</div>
+</div>
+</div>
